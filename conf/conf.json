@@ -1,0 +1,46 @@
+{
+  "mqtt": {
+    "broker": "tcp://192.168.42.34:1883"
+  },
+  "rallye":{
+    "roundLength": "3s",
+    "numberOfMovesPerRound": 9,
+    "players": [
+      {
+        "name": "player1",
+        "topicPlannedActions": "spheroRallye/player1/plannedActions",
+        "topicPossibleActionTypes": "spheroRallye/player1/possibleActionTypes",
+        "possibleActionTypes": [],
+        "plannedActions": []
+      },
+      {
+        "name": "player2",
+        "topicPlannedActions": "spheroRallye/player2/plannedActions",
+        "topicPossibleActionTypes": "spheroRallye/player2/possibleActionTypes",
+        "possibleActionTypes": [],
+        "plannedActions": []
+      },
+      {
+        "name": "player3",
+        "topicPlannedActions": "spheroRallye/player3/plannedActions",
+        "topicPossibleActionTypes": "spheroRallye/player3/possibleActionTypes",
+        "possibleActionTypes": [],
+        "plannedActions": []
+      },
+      {
+        "name": "player4",
+        "topicPlannedActions": "spheroRallye/player4/plannedActions",
+        "topicPossibleActionTypes": "spheroRallye/player4/possibleActionTypes",
+        "possibleActionTypes": [],
+        "plannedActions": []
+      },
+      {
+        "name": "player5",
+        "topicPlannedActions": "spheroRallye/player5/plannedActions",
+        "topicPossibleActionTypes": "spheroRallye/player5/possibleActionTypes",
+        "possibleActionTypes": [],
+        "plannedActions": []
+      }
+    ]
+  }
+}
