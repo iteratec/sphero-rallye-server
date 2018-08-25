@@ -4,7 +4,7 @@
     "topicPrefix": "spheroRallye"
   },
   "rallye": {
-    "roundLength": "5s",
+    "roundLengthInSeconds": 5,
     "numberOfMovesPerRound": 9,
     "players": [
       { "name": "player1", "bluetoothId": "SK-037" },

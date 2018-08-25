@@ -16,17 +16,19 @@ func InitSchedules() {
 }
 
 func scheduleRoundEnd(cron *cron.Cron) {
-	roundLengthCron := fmt.Sprintf("@every %s", viper.GetString("rallye.roundLength"))
+	roundLengthCron := fmt.Sprintf("@every %ds", viper.GetInt("rallye.roundLengthInSeconds"))
 	log.Info.Printf("Schedule provision of next actions now: %s", roundLengthCron)
 	cron.AddFunc(roundLengthCron, handleRoundEnd)
 }
 
 func handleRoundEnd() {
 
-	//TODO: Run this round player actions
 	for _, player := range player.GetPlayers() {
 		log.Info.Printf("Starting actions for player %s: %v", player.Name, actions.GetActions(player.Name))
+		//TODO: Run this round player actions
 	}
+
 	actions.ProvideNextActionTypes()
+	SendNextRoundEnd()
 
 }
