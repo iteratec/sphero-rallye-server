@@ -1,7 +1,8 @@
 package mqtt
 
 type ActionType int
-func (at ActionType) String() string{
+
+func (at ActionType) String() string {
 	names := [3]string{
 		"SET_COLOR",
 		"MOVE",
@@ -12,6 +13,7 @@ func (at ActionType) String() string{
 	}
 	return names[at]
 }
+
 const (
 	SET_COLOR   ActionType = iota
 	MOVE
@@ -20,7 +22,7 @@ const (
 
 type (
 	SpheroAction struct {
-		actionType ActionType
-		config map[string]uint16
+		actionType ActionType        `json:"actionType"`
+		config     map[string]uint16 `json:"config,omitempty"`
 	}
 )

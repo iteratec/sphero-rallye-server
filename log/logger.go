@@ -2,7 +2,6 @@ package log
 
 import (
 	"log"
-	"io/ioutil"
 	"os"
 )
 
@@ -20,7 +19,7 @@ func init() {
 		log.Fatalln("Failed to open log file:", err)
 	}
 
-	Debug = log.New(ioutil.Discard,
+	Debug = log.New(logFile,
 		"DEBUG: ",
 		log.Ldate|log.Ltime|log.Lshortfile)
 

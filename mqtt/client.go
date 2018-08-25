@@ -22,17 +22,11 @@ var(
 func InitClient() {
 	broker = viper.GetString("mqtt.broker")
 	log.Info.Printf("Connecting to mqtt broker =%v\n", broker)
-	//password := flag.String("password", "", "The password (optional)")
-	//user := flag.String("user", "", "The User (optional)")
-	//id := flag.String("id", "testgoid", "The ClientID (optional)")
-
 	store = ":memory:"
-
 	client = MQTT.NewClient(getMqttOptions())
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-
 }
 
 func GetClient() MQTT.Client {
@@ -44,8 +38,6 @@ func getMqttOptions() *MQTT.ClientOptions {
 	opts.AddBroker(broker)
 	opts.SetClientID(id)
 	opts.SetKeepAlive(5)
-	//opts.SetUsername(*user)
-	//opts.SetPassword(*password)
 	opts.SetCleanSession(false)
 	if store != ":memory:" {
 		opts.SetStore(MQTT.NewFileStore(store))
