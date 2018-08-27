@@ -7,6 +7,7 @@ import (
 	"github.com/iteratec/sphero-rallye-server/log"
 	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"github.com/iteratec/sphero-rallye-server/rallye/actions"
+	"github.com/iteratec/sphero-rallye-server/sphero"
 )
 
 func InitSchedules() {
@@ -23,9 +24,12 @@ func scheduleRoundEnd(cron *cron.Cron) {
 
 func handleRoundEnd() {
 
-	for _, player := range player.GetPlayers() {
-		log.Info.Printf("Starting actions for player %s: %v", player.Name, actions.GetActions(player.Name))
-		//TODO: Run this round player actions
+	for _, p := range player.GetPlayers() {
+		actionsOfRound := actions.GetActions(p.Name)
+		for _, action := range actionsOfRound {
+			sphero.RunAction(p.Name,action)
+		}
+		actions.SetActions(nil, p.Name)
 	}
 
 	actions.ProvideNextActionTypes()

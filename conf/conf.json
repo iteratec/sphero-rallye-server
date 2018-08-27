@@ -5,13 +5,10 @@
   },
   "rallye": {
     "roundLengthInSeconds": 5,
-    "numberOfMovesPerRound": 9,
+    "providedActionTypesPerRound": 9,
+    "allowedActionsPerRound": 5,
     "players": [
-      { "name": "player1", "bluetoothId": "SK-037" },
-      { "name": "player2", "bluetoothId": "" },
-      { "name": "player3", "bluetoothId": "" },
-      { "name": "player4", "bluetoothId": "" },
-      { "name": "player5", "bluetoothId": "" }
+      { "name": "player1", "bluetoothId": "SK-0037" }
     ]
   }
 }

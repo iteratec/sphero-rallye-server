@@ -5,23 +5,22 @@ import (
 	"sync"
 	"os/signal"
 	"syscall"
-	"github.com/iteratec/sphero-rallye-server/conf"
 	"github.com/iteratec/sphero-rallye-server/log"
 	"github.com/iteratec/sphero-rallye-server/mqtt"
 	"github.com/iteratec/sphero-rallye-server/rallye"
+	"github.com/iteratec/sphero-rallye-server/sphero"
+	"github.com/iteratec/sphero-rallye-server/conf"
 )
 
 var wg sync.WaitGroup
 
-func init() {
-	conf.Init()
-	mqtt.InitClient()
-	rallye.InitSchedules()
-}
-
 func main() {
 
-	go rallye.InitGame()
+	conf.Init()
+	mqtt.InitClient()
+	sphero.InitSpheros()
+	rallye.InitSchedules()
+	rallye.InitGame()
 
 	runUntilInterrupt()
 

@@ -3,52 +3,109 @@ package sphero
 import (
 	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"gobot.io/x/gobot/platforms/ble"
-	"os"
 	"gobot.io/x/gobot/platforms/sphero/sprkplus"
 	"gobot.io/x/gobot"
-	"time"
 	"fmt"
 	"github.com/iteratec/sphero-rallye-server/mqtt"
 	"github.com/iteratec/sphero-rallye-server/log"
+	"time"
+)
+
+const (
+	ActionConfKey_Red            = "red"
+	ActionConfKey_Green          = "green"
+	ActionConfKey_Blue           = "blue"
+	ActionConfKey_Speed          = "speed"
+	ActionConfKey_Heading        = "heading"
+	ActionConfKey_DurationInSecs = "durationInSecs"
 )
 
 var (
-	actionsToExecuteByPlayername map[string]chan mqtt.SpheroAction
+	botsByPlayername map[string]*SpheroBot
 )
 
 func init() {
-	actionsToExecuteByPlayername = make(map[string]chan mqtt.SpheroAction)
+	botsByPlayername = make(map[string]*SpheroBot)
 }
 
-func InitSpheros(){
+func InitSpheros() {
 
-	for _,p := range player.GetPlayers(){
-		actionsToExecuteByPlayername[p.Name] = make(chan mqtt.SpheroAction)
-		bluetoothId := p.BluetoothId
-		bleAdaptor := ble.NewClientAdaptor(bluetoothId)
-		sprk := sprkplus.NewDriver(bleAdaptor)
-		work := func() {
-			for {
-				nextMove := <-actionsToExecuteByPlayername[p.Name]
-				log.Info.Printf("Player %s will execute action %v now.", p.Name, nextMove)
-			}
-			//gobot.Every(1*time.Second, func() {
-			//	sprk.Roll(50, 0)
-			//})
-			//gobot.After(3*time.Second, func() {
-			//	sprk.Stop()
-			//})
+	players := player.GetPlayers()
+	log.Debug.Printf("Players for which spheros get initialized now: %v", players)
+	for _, p := range players {
+		adaptor := ble.NewClientAdaptor(p.BluetoothId)
+		bot := &SpheroBot{
+			RallyePlayer: p,
+			BleAdaptor:   adaptor,
+			SprkDriver:   sprkplus.NewDriver(adaptor),
+			ActionChan:   make(chan mqtt.SpheroAction),
+			Heading:      0,
 		}
-		robot := gobot.NewRobot(fmt.Sprintf("sprk_robot_%s", p.Name),
-			[]gobot.Connection{bleAdaptor},
-			[]gobot.Device{sprk},
-			work,
-		)
-		robot.Start()
+		go bot.awaitActions()
+		botsByPlayername[p.Name] = bot
 	}
+	log.Debug.Printf("botsByPlayername=%v", botsByPlayername)
+
 }
 
-func MovePlayerSpheros()  {
-	//for _,p := range player.GetPlayers(){
-	//}
+type SpheroBot struct {
+	RallyePlayer player.RallyePlayer
+	BleAdaptor   *ble.ClientAdaptor
+	SprkDriver   *sprkplus.SPRKPlusDriver
+	ActionChan   chan mqtt.SpheroAction
+	Heading      uint16
+}
+
+func (sb *SpheroBot) awaitActions() {
+	log.Debug.Printf("awaitActions: start for player %s", sb.RallyePlayer.Name)
+	work := func() {
+		for {
+			log.Info.Printf("RallyePlayer %s waits for the next action now.", sb.RallyePlayer.Name)
+			nextAction := <-sb.ActionChan
+			log.Info.Printf("RallyePlayer %s will execute action %v now.", sb.RallyePlayer.Name, nextAction)
+			switch nextAction.ActionType {
+			case mqtt.SET_RGB:
+				sb.setColor(nextAction.Config)
+			case mqtt.ROTATE:
+				sb.rotate(nextAction.Config)
+			case mqtt.ROLL:
+				sb.roll(nextAction.Config)
+			}
+		}
+	}
+	log.Debug.Printf("awaitActions: work defined for player %s", sb.RallyePlayer.Name)
+	robot := gobot.NewRobot(fmt.Sprintf("sprk_robot_%s", sb.RallyePlayer.Name),
+		[]gobot.Connection{sb.BleAdaptor},
+		[]gobot.Device{sb.SprkDriver},
+		work,
+	)
+	log.Debug.Printf("awaitActions: starting robot now for player %s", sb.RallyePlayer.Name)
+	robot.Start()
+}
+
+func (sb *SpheroBot) setColor(config map[string]uint16) {
+	sb.SprkDriver.SetRGB(uint8(config[ActionConfKey_Red]), uint8(config[ActionConfKey_Green]), uint8(config[ActionConfKey_Blue]))
+}
+func (sb *SpheroBot) rotate(config map[string]uint16) {
+	heading := config[ActionConfKey_Heading]
+	sb.Heading = heading
+	ticker := gobot.Every(1*time.Second, func() {
+		sb.SprkDriver.Roll(0, heading)
+	})
+	gobot.After(3*time.Second, func() {
+		ticker.Stop()
+	})
+}
+func (sb *SpheroBot) roll(config map[string]uint16) {
+	ticker := gobot.Every(1*time.Second, func() {
+		sb.SprkDriver.Roll(uint8(config[ActionConfKey_Speed]), sb.Heading)
+	})
+	gobot.After(time.Duration(config[ActionConfKey_DurationInSecs])*time.Second, func() {
+		ticker.Stop()
+	})
+}
+
+func RunAction(playerName string, action mqtt.SpheroAction) {
+	log.Debug.Printf("Adding the following action to channel of player %s: %v", playerName, action.String())
+	botsByPlayername[playerName].ActionChan <- action
 }

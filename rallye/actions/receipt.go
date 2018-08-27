@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sync"
 	"encoding/json"
-	"github.com/spf13/viper"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iteratec/sphero-rallye-server/log"
 	"github.com/iteratec/sphero-rallye-server/mqtt"
 	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"errors"
+	"github.com/iteratec/sphero-rallye-server/sphero"
 )
 
 var (
@@ -28,15 +28,49 @@ func init() {
 func HandleIncomingSpheroActions() {
 
 	client := mqtt.GetClient()
-
 	players := player.GetPlayers()
-	log.Debug.Printf("Subscribing to topics for incoming planned actions of players '%v'\n", players)
 
 	for _, p := range players {
+		go handleIncomingSpheroActions(p, client)
+	}
 
-		log.Debug.Printf("Subscribing to topic for incoming planned actions of player '%s'\n", p.Name)
-		client.Subscribe(player.GetTopicName(p, mqtt.PLANNED_ACTIONS), byte(mqtt.AT_MOST_ONCE), addPlannedActions)
+}
 
+func handleIncomingSpheroActions(p player.RallyePlayer, client MQTT.Client) {
+	topicsToSubscribe := map[string]byte{
+		player.GetTopicName(p, mqtt.PLANNED_ACTIONS): byte(mqtt.AT_LEAST_ONCE),
+		player.GetTopicName(p, mqtt.AD_HOC_ACTION):   byte(mqtt.AT_LEAST_ONCE),
+	}
+
+	msgQueue := make(chan MQTT.Message)
+	client.SubscribeMultiple(topicsToSubscribe, func(i MQTT.Client, msg MQTT.Message) {
+		msgQueue <- msg
+	})
+	for {
+		incomingMsg := <-msgQueue
+		topicName := string(incomingMsg.Topic())
+		log.Info.Printf("TOPIC '%s' -> received MESSAGE: %s\n", topicName, string(incomingMsg.Payload()))
+
+		switch topicName {
+		case player.GetOtherTopicOfSameplayer(topicName, mqtt.PLANNED_ACTIONS):
+			addPlannedActions(client, incomingMsg)
+		case player.GetOtherTopicOfSameplayer(topicName, mqtt.AD_HOC_ACTION):
+			runAdHocAction(client, incomingMsg)
+		}
+	}
+}
+
+func runAdHocAction(client MQTT.Client, incomingMsg MQTT.Message) {
+
+	action := mqtt.SpheroAction{}
+	err := json.Unmarshal(incomingMsg.Payload(), &action)
+
+	if err != nil {
+		publishError(incomingMsg, err, fmt.Sprintf("Die folgende Aktion hat das falsche Format: %s", string(incomingMsg.Payload())))
+	} else {
+		playerName := player.GetPlayerName(string(incomingMsg.Topic()))
+		log.Info.Printf("Run the following action for player '%s': %v\n", playerName, action)
+		go sphero.RunAction(playerName, action)
 	}
 
 }
@@ -51,11 +85,13 @@ func addPlannedActions(client MQTT.Client, incomingMsg MQTT.Message) {
 	} else {
 		playerName := player.GetPlayerName(string(incomingMsg.Topic()))
 		log.Info.Printf("Set the following actions for player '%s': %v\n", playerName, actions)
-		if valid, validationMsg := validate(actions); !valid {
+		if valid, validationMsg := ValidateActions(actions, playerName); !valid {
 			publishError(incomingMsg, errors.New(validationMsg), validationMsg)
+		} else {
+			SetActions(actions, playerName)
 		}
-		setActions(actions, playerName)
 	}
+
 }
 
 func publishError(incomingMsg MQTT.Message, err error, msgToPublish string) {
@@ -76,20 +112,8 @@ func GetActions(playerName string) []mqtt.SpheroAction {
 	return actions
 }
 
-func setActions(actions []mqtt.SpheroAction, playerName string) {
+func SetActions(actions []mqtt.SpheroAction, playerName string) {
 	actionMutex.Lock()
 	plannedActions[playerName] = actions
 	actionMutex.Unlock()
-}
-
-// Checks whether list of SpheroActions
-// 	* contains correct amount of actions
-func validate(actions []mqtt.SpheroAction) (bool, string) {
-	validationMsg := ""
-	numberOfMovesPerRound := viper.GetInt("rallye.numberOfMovesPerRound")
-	valid := len(actions) == numberOfMovesPerRound
-	if !valid {
-		validationMsg += fmt.Sprintf("Die Liste muss genau %v Aktionen enthalten. Hier war(en) es: %v.", numberOfMovesPerRound, len(actions))
-	}
-	return valid, validationMsg
 }

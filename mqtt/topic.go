@@ -8,9 +8,10 @@ import (
 type TopicType int
 
 func (topicType TopicType) GetName() string {
-	names := [4]string{
+	names := [5]string{
 		"possibleActionTypes",
 		"plannedActions",
+		"adHocAction",
 		"errors",
 		"roundEnd",
 	}
@@ -23,6 +24,7 @@ func (topicType TopicType) GetName() string {
 const (
 	POSSIBLE_ACTION_TYPES TopicType = iota
 	PLANNED_ACTIONS
+	AD_HOC_ACTION
 	ERRORS
 	ROUND_END
 )
