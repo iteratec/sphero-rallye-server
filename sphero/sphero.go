@@ -104,9 +104,14 @@ func (sb *SpheroBot) roll(config map[string]uint16) {
 	gobot.After(time.Duration(config[ActionConfKey_DurationInSecs])*time.Second, func() {
 		ticker.Stop()
 	})
+func (sb *SpheroBot) Wakeup() {
+	sb.SprkDriver.Wake()
 }
 
 func RunAction(playerName string, action mqtt.SpheroAction) {
 	log.Debug.Printf("Adding the following action to channel of player %s: %v", playerName, action.String())
 	botsByPlayername[playerName].ActionChan <- action
+}
+func Wakeup(playerName string) {
+	botsByPlayername[playerName].Wakeup()
 }
