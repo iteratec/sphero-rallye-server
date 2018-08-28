@@ -14,7 +14,7 @@ func InitGame() {
 func SendNextRoundEnd() {
 	client := mqtt.GetClient()
 	topicPath := mqtt.GetRoundEndTopicPath()
-	roundEndTime := getNextRoundEndTime().Format(time.RFC1123)
+	roundEndTime := getNextRoundEndTime().Format(time.RFC1123Z)
 	log.Debug.Printf("Sending round end '%v' to topic '%s'", roundEndTime, topicPath)
 	client.Publish(topicPath, byte(mqtt.AT_MOST_ONCE), false, roundEndTime)
 }
