@@ -30,17 +30,17 @@ The server reads and writes to/from several mqtt topics:
 
 #### End time of the next round
 
-In the end of each round the server will send the end time of each round to the topic `<global topic prefix>/roundEnd`
+In the end of each round the server will send the end time of each round to the topic `<global topic prefix>/roundEnd`. Date will be formatted with RFC1123Z (e.g. `Tue, 28 Aug 2018 13:35:01 +0200`).
 
 Were
 * `<global topic prefix>` can be configured in config file under path `mqtt.topicPrefix`
 
-#### Next possible moves for each player
+#### Next possible Action types for each player
 
 In the end of each round the server will produce a number of random ActionTypes for each of the participatory players.
 As well number of actions per round as the participatory players can be configured in config file.
 
-The number of possible ActionTypes will be published to different topics for each player: `<global topic prefix>/<player name>/possibleActionTypes`
+The number of possible ActionTypes will be published to different topics for each player: `<global topic prefix>/<player name>/possibleActionTypes`. The possible types are `ROLL`, `ROTATE` and `SET_RGB`.
 
 Where
 * `<global topic prefix>` can be configured in config file under path `mqtt.topicPrefix`
@@ -57,8 +57,16 @@ Where
 
 ### MQTT Reads
 
-Player clients may send their next actions to the topic `<global topic prefix>/<player name>/plannedActions`
+Player clients may send their next actions to the topic `<global topic prefix>/<player name>/plannedActions`.
 
 Where
 * `<global topic prefix>` can be configured in config file under path `mqtt.topicPrefix`
 * `<player name>` can be configured under path `rallye.players[0-n].name`
+
+Expected format is the following:
+
+        [
+                {"ActionType": "ROTATE", "Config": {"heading": 0}},
+                {"ActionType": "ROLL", "Config": {"durationInSecs": 1, "speed": 100}},
+                {"ActionType": "SET_RGB", "Config": {"red": 0, "green": 255, "blue": 0}}
+        ]
