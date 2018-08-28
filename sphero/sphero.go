@@ -74,6 +74,7 @@ func (sb *SpheroBot) awaitActions() {
 			case mqtt.ROLL:
 				sb.roll(nextAction.Config)
 			}
+			time.Sleep(500 * time.Millisecond)
 		}
 	}
 	log.Debug.Printf("awaitActions: work defined for player %s", sb.RallyePlayer.Name)
@@ -98,20 +99,27 @@ func (sb *SpheroBot) setColor(config map[string]uint16) {
 func (sb *SpheroBot) rotate(config map[string]uint16) {
 	heading := config[ActionConfKey_Heading]
 	sb.Heading = heading
+	ready := make(chan bool)
 	ticker := gobot.Every(1*time.Second, func() {
 		sb.SprkDriver.Roll(0, heading)
 	})
 	gobot.After(3*time.Second, func() {
 		ticker.Stop()
+		ready <- true
 	})
+	<-ready
 }
 func (sb *SpheroBot) roll(config map[string]uint16) {
+	ready := make(chan bool)
 	ticker := gobot.Every(1*time.Second, func() {
 		sb.SprkDriver.Roll(uint8(config[ActionConfKey_Speed]), sb.Heading)
 	})
 	gobot.After(time.Duration(config[ActionConfKey_DurationInSecs])*time.Second, func() {
 		ticker.Stop()
+		ready <- true
 	})
+	<-ready
+}
 func (sb *SpheroBot) Wakeup() {
 	sb.SprkDriver.Wake()
 	sb.SprkDriver.SetRGB(sb.Color.Red, sb.Color.Green, sb.Color.Blue)
