@@ -10,6 +10,7 @@ import (
 	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"errors"
 	"github.com/iteratec/sphero-rallye-server/sphero"
+	"github.com/iteratec/sphero-rallye-server/conf"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 
 func init() {
 	plannedActions = make(map[string][]mqtt.SpheroAction)
-	for _, p := range player.GetPlayers() {
+	for _, p := range conf.Players {
 		plannedActions[p.Name] = []mqtt.SpheroAction{}
 	}
 	actionMutex = &sync.Mutex{}
@@ -28,7 +29,7 @@ func init() {
 func HandleIncomingSpheroActions() {
 
 	client := mqtt.GetClient()
-	players := player.GetPlayers()
+	players := conf.Players
 
 	for _, p := range players {
 		go handleIncomingSpheroActions(p, client)

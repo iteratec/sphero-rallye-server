@@ -8,6 +8,7 @@ import (
 	"github.com/iteratec/sphero-rallye-server/mqtt"
 	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"sync"
+	"github.com/iteratec/sphero-rallye-server/conf"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 
 func init() {
 	actionsTypes = make(map[string][]mqtt.ActionType)
-	for _, p := range player.GetPlayers() {
+	for _, p := range conf.Players {
 		actionsTypes[p.Name] = []mqtt.ActionType{}
 	}
 	actionTypeMutex = &sync.Mutex{}
@@ -32,7 +33,7 @@ func getRandomActionType() mqtt.ActionType {
 // sends them to the players mqtt topics
 func ProvideNextActionTypes() {
 
-	for _, p := range player.GetPlayers() {
+	for _, p := range conf.Players {
 		go provideActionTypes(p)
 	}
 

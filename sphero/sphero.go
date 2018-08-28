@@ -1,14 +1,15 @@
 package sphero
 
 import (
-	"github.com/iteratec/sphero-rallye-server/rallye/player"
-	"gobot.io/x/gobot/platforms/ble"
-	"gobot.io/x/gobot/platforms/sphero/sprkplus"
-	"gobot.io/x/gobot"
 	"fmt"
+	"time"
+	"gobot.io/x/gobot/platforms/ble"
+	"gobot.io/x/gobot"
+	"gobot.io/x/gobot/platforms/sphero/sprkplus"
+	"github.com/iteratec/sphero-rallye-server/rallye/player"
 	"github.com/iteratec/sphero-rallye-server/mqtt"
 	"github.com/iteratec/sphero-rallye-server/log"
-	"time"
+	"github.com/iteratec/sphero-rallye-server/conf"
 )
 
 const (
@@ -30,7 +31,7 @@ func init() {
 
 func InitSpheros() {
 
-	players := player.GetPlayers()
+	players := conf.Players
 	log.Debug.Printf("Players for which spheros get initialized now: %v", players)
 	for _, p := range players {
 		adaptor := ble.NewClientAdaptor(p.BluetoothId)
