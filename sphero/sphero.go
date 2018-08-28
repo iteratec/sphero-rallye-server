@@ -41,6 +41,7 @@ func InitSpheros() {
 			SprkDriver:   sprkplus.NewDriver(adaptor),
 			ActionChan:   make(chan mqtt.SpheroAction),
 			Heading:      0,
+			Color:        SpheroColor{Red: 0, Green: 200, Blue: 0},
 		}
 		go bot.awaitActions()
 		botsByPlayername[p.Name] = bot
@@ -55,6 +56,7 @@ type SpheroBot struct {
 	SprkDriver   *sprkplus.SPRKPlusDriver
 	ActionChan   chan mqtt.SpheroAction
 	Heading      uint16
+	Color        SpheroColor
 }
 
 func (sb *SpheroBot) awaitActions() {
@@ -85,7 +87,13 @@ func (sb *SpheroBot) awaitActions() {
 }
 
 func (sb *SpheroBot) setColor(config map[string]uint16) {
-	sb.SprkDriver.SetRGB(uint8(config[ActionConfKey_Red]), uint8(config[ActionConfKey_Green]), uint8(config[ActionConfKey_Blue]))
+	newColor := SpheroColor{
+		Red: uint8(config[ActionConfKey_Red]),
+		Green: uint8(config[ActionConfKey_Green]),
+		Blue: uint8(config[ActionConfKey_Blue]),
+	}
+	sb.SprkDriver.SetRGB(newColor.Red, newColor.Green, newColor.Blue)
+	sb.Color = newColor
 }
 func (sb *SpheroBot) rotate(config map[string]uint16) {
 	heading := config[ActionConfKey_Heading]
@@ -106,6 +114,7 @@ func (sb *SpheroBot) roll(config map[string]uint16) {
 	})
 func (sb *SpheroBot) Wakeup() {
 	sb.SprkDriver.Wake()
+	sb.SprkDriver.SetRGB(sb.Color.Red, sb.Color.Green, sb.Color.Blue)
 }
 
 func RunAction(playerName string, action mqtt.SpheroAction) {
