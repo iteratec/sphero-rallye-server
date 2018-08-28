@@ -10,7 +10,7 @@ import (
 var Players []player.RallyePlayer
 
 func Init() {
-	viper.AddConfigPath("/etc/rallye-rallye-server")
+	viper.AddConfigPath("/etc/sphero-rallye-server")
 	viper.AddConfigPath("./conf/")
 	viper.SetConfigName("conf")
 	err := viper.ReadInConfig()
