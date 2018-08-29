@@ -59,29 +59,29 @@ type SpheroBot struct {
 	Color        SpheroColor
 }
 
+func (sb *SpheroBot) work() {
+	for {
+		log.Info.Printf("RallyePlayer %s waits for the next action now.", sb.RallyePlayer.Name)
+		nextAction := <-sb.ActionChan
+		log.Info.Printf("RallyePlayer %s will execute action %v now.", sb.RallyePlayer.Name, nextAction)
+		switch nextAction.ActionType {
+		case mqtt.SET_RGB:
+			sb.setColor(nextAction.Config)
+		case mqtt.ROTATE:
+			sb.rotate(nextAction.Config)
+		case mqtt.ROLL:
+			sb.roll(nextAction.Config)
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
 func (sb *SpheroBot) awaitActions() {
 	log.Debug.Printf("awaitActions: start for player %s (%s)", sb.RallyePlayer.Name, sb.RallyePlayer.BluetoothId)
-	work := func() {
-		for {
-			log.Info.Printf("RallyePlayer %s waits for the next action now.", sb.RallyePlayer.Name)
-			nextAction := <-sb.ActionChan
-			log.Info.Printf("RallyePlayer %s will execute action %v now.", sb.RallyePlayer.Name, nextAction)
-			switch nextAction.ActionType {
-			case mqtt.SET_RGB:
-				sb.setColor(nextAction.Config)
-			case mqtt.ROTATE:
-				sb.rotate(nextAction.Config)
-			case mqtt.ROLL:
-				sb.roll(nextAction.Config)
-			}
-			time.Sleep(500 * time.Millisecond)
-		}
-	}
-	log.Debug.Printf("awaitActions: work defined for player %s", sb.RallyePlayer.Name)
 	robot := gobot.NewRobot(fmt.Sprintf("sprk_robot_%s", sb.RallyePlayer.Name),
 		[]gobot.Connection{sb.BleAdaptor},
 		[]gobot.Device{sb.SprkDriver},
-		work,
+		sb.work,
 	)
 	log.Debug.Printf("awaitActions: starting robot now for player %s", sb.RallyePlayer.Name)
 	robot.Start()
@@ -89,9 +89,9 @@ func (sb *SpheroBot) awaitActions() {
 
 func (sb *SpheroBot) setColor(config map[string]uint16) {
 	newColor := SpheroColor{
-		Red: uint8(config[ActionConfKey_Red]),
+		Red:   uint8(config[ActionConfKey_Red]),
 		Green: uint8(config[ActionConfKey_Green]),
-		Blue: uint8(config[ActionConfKey_Blue]),
+		Blue:  uint8(config[ActionConfKey_Blue]),
 	}
 	sb.SprkDriver.SetRGB(newColor.Red, newColor.Green, newColor.Blue)
 	sb.Color = newColor
