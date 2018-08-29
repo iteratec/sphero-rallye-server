@@ -4,11 +4,16 @@
     "topicPrefix": "spheroRallye"
   },
   "rallye": {
+    "muteRoundLogic": false,
     "roundLengthInSeconds": 20,
-    "providedActionTypesPerRound": 20,
-    "allowedActionsPerRound": 8,
+    "providedActionTypesPerRound": 9,
+    "allowedActionsPerRound": 5,
     "players": [
-      { "name": "player1", "bluetoothId": "SK-0037" }
+      { "name": "player1", "bluetoothId": "SK-DE99" },
+      { "name": "player2", "bluetoothId": "SK-59E0" },
+      { "name": "player3", "bluetoothId": "SK-B904" },
+      { "name": "player4", "bluetoothId": "SK-90E5" },
+      { "name": "player5", "bluetoothId": "SK-28E0" }
     ]
   }
 }

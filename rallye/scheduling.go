@@ -42,7 +42,9 @@ func handleRoundEnd() {
 		actions.SetActions(nil, p.Name)
 	}
 
-	actions.ProvideNextActionTypes()
-	SendNextRoundEnd()
+	if !viper.GetBool("rallye.muteRoundLogic") {
+		actions.ProvideNextActionTypes()
+		SendNextRoundEnd()
+	}
 
 }
