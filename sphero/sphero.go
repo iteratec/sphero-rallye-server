@@ -60,7 +60,7 @@ type SpheroBot struct {
 }
 
 func (sb *SpheroBot) awaitActions() {
-	log.Debug.Printf("awaitActions: start for player %s", sb.RallyePlayer.Name)
+	log.Debug.Printf("awaitActions: start for player %s (%s)", sb.RallyePlayer.Name, sb.RallyePlayer.BluetoothId)
 	work := func() {
 		for {
 			log.Info.Printf("RallyePlayer %s waits for the next action now.", sb.RallyePlayer.Name)
