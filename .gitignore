@@ -15,4 +15,5 @@
 
 # ---> sphero-rallye-server
 main
-rallye-rallye-server.log
+sphero-rallye-server
+sphero-rallye-server.log
