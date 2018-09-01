@@ -34,6 +34,20 @@ func wakeUpSpheros() {
 
 func handleRoundEnd() {
 
+	runPlayerActions()
+
+	StartNextRound()
+
+}
+
+func StartNextRound() {
+	if !viper.GetBool("rallye.muteRoundLogic") {
+		actions.ProvideNextActionTypes()
+		SendNextRoundEnd()
+	}
+}
+
+func runPlayerActions() {
 	for _, p := range conf.Players {
 		actionsOfRound := actions.GetActions(p.Name)
 		for _, action := range actionsOfRound {
@@ -41,10 +55,4 @@ func handleRoundEnd() {
 		}
 		actions.SetActions(nil, p.Name)
 	}
-
-	if !viper.GetBool("rallye.muteRoundLogic") {
-		actions.ProvideNextActionTypes()
-		SendNextRoundEnd()
-	}
-
 }

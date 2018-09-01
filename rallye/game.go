@@ -10,6 +10,7 @@ import (
 
 func InitGame() {
 	actions.HandleIncomingSpheroActions()
+	StartNextRound()
 }
 func SendNextRoundEnd() {
 	client := mqtt.GetClient()
