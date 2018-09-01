@@ -60,13 +60,22 @@ type SpheroBot struct {
 }
 
 func (sb *SpheroBot) work() {
+	//sb.SprkDriver.ConfigureCollisionDetection()
+	//sb.SprkDriver.On(sphero.Collision, func(data interface{}) {
+	//	red := SpheroColor{
+	//		Red: 200,
+	//		Green: 0,
+	//		Blue: 0,
+	//	}
+	//	sb.setColor(red)
+	//})
 	for {
 		log.Info.Printf("RallyePlayer %s waits for the next action now.", sb.RallyePlayer.Name)
 		nextAction := <-sb.ActionChan
 		log.Info.Printf("RallyePlayer %s will execute action %v now.", sb.RallyePlayer.Name, nextAction)
 		switch nextAction.ActionType {
 		case mqtt.SET_RGB:
-			sb.setColor(nextAction.Config)
+			sb.setColorFromConfig(nextAction.Config)
 		case mqtt.ROTATE:
 			sb.rotate(nextAction.Config)
 		case mqtt.ROLL:
@@ -87,14 +96,17 @@ func (sb *SpheroBot) awaitActions() {
 	robot.Start()
 }
 
-func (sb *SpheroBot) setColor(config map[string]uint16) {
+func (sb *SpheroBot) setColorFromConfig(config map[string]uint16) {
 	newColor := SpheroColor{
 		Red:   uint8(config[ActionConfKey_Red]),
 		Green: uint8(config[ActionConfKey_Green]),
 		Blue:  uint8(config[ActionConfKey_Blue]),
 	}
-	sb.SprkDriver.SetRGB(newColor.Red, newColor.Green, newColor.Blue)
-	sb.Color = newColor
+	sb.setColor(newColor)
+}
+func (sb *SpheroBot) setColor(color SpheroColor) {
+	sb.SprkDriver.SetRGB(color.Red, color.Green, color.Blue)
+	sb.Color = color
 }
 func (sb *SpheroBot) rotate(config map[string]uint16) {
 	heading := config[ActionConfKey_Heading]
