@@ -9,7 +9,9 @@ import (
 )
 
 func InitGame() {
-	actions.HandleIncomingSpheroActions()
+	if !viper.GetBool("rallye.mutePlayerControl") {
+		actions.HandleIncomingSpheroActions()
+	}
 	StartNextRound()
 }
 func SendNextRoundEnd() {

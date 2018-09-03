@@ -8,6 +8,7 @@ import (
 	"github.com/iteratec/sphero-rallye-server/rallye/actions"
 	"github.com/iteratec/sphero-rallye-server/sphero"
 	"github.com/iteratec/sphero-rallye-server/conf"
+	"github.com/iteratec/sphero-rallye-server/rallye/player"
 )
 
 func InitSchedules() {
@@ -23,7 +24,9 @@ func scheduleRoundEnd(cron *cron.Cron) {
 	cron.AddFunc(roundLengthCron, handleRoundEnd)
 }
 func scheduleSpheroWakeups(cron *cron.Cron) {
-	cron.AddFunc("@every 60s", wakeUpSpheros)
+	if !viper.GetBool("rallye.mutePlayerControl") {
+		cron.AddFunc("@every 60s", wakeUpSpheros)
+	}
 }
 func wakeUpSpheros() {
 	for _, p := range conf.Players {
@@ -34,7 +37,9 @@ func wakeUpSpheros() {
 
 func handleRoundEnd() {
 
-	runPlayerActions()
+	if !viper.GetBool("rallye.mutePlayerControl") {
+		runPlayerActions()
+	}
 
 	StartNextRound()
 

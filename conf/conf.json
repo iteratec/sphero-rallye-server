@@ -5,6 +5,7 @@
   },
   "rallye": {
     "muteRoundLogic": false,
+    "mutePlayerControl": false,
     "roundLengthInSeconds": 20,
     "providedActionTypesPerRound": 9,
     "allowedActionsPerRound": 5,

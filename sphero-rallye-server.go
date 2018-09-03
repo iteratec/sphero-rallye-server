@@ -10,6 +10,7 @@ import (
 	"github.com/iteratec/sphero-rallye-server/rallye"
 	"github.com/iteratec/sphero-rallye-server/sphero"
 	"github.com/iteratec/sphero-rallye-server/conf"
+	"github.com/spf13/viper"
 )
 
 var wg sync.WaitGroup
@@ -18,7 +19,9 @@ func main() {
 
 	conf.Init()
 	mqtt.InitClient()
-	sphero.InitSpheros()
+	if !viper.GetBool("rallye.mutePlayerControl") {
+		sphero.InitSpheros()
+	}
 	rallye.InitSchedules()
 	rallye.InitGame()
 
