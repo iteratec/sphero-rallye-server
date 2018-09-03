@@ -54,10 +54,14 @@ func StartNextRound() {
 
 func runPlayerActions() {
 	for _, p := range conf.Players {
-		actionsOfRound := actions.GetActions(p.Name)
-		for _, action := range actionsOfRound {
-			sphero.RunAction(p.Name, action)
-		}
-		actions.SetActions(nil, p.Name)
+		go runActionsForOnePlayer(p)
 	}
+}
+
+func runActionsForOnePlayer(p player.RallyePlayer) {
+	actionsOfRound := actions.GetActions(p.Name)
+	for _, action := range actionsOfRound {
+		sphero.RunAction(p.Name, action)
+	}
+	actions.SetActions(nil, p.Name)
 }
